@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:component-scan base-package="com.zeyigou.page.service.listener"/>
+    <!--1.定义目标连接工厂-->
+    <bean id="targetConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://192.168.25.129:61616"/>
+    </bean>
+    <!--2.定义spring封装好的连接工厂-->
+    <bean id="connectionFactory1" class="org.springframework.jms.connection.SingleConnectionFactory">
+        <property name="targetConnectionFactory" ref="targetConnectionFactory"/>
+    </bean>
+    <!--3.定义发布/订阅的目标对象（生成静态页面）-->
+    <bean id="genHtmlTopic" class="org.apache.activemq.command.ActiveMQTopic">
+        <constructor-arg name="name" value="genHtmlTopic"/>
+    </bean>
+    <!--4.定义监听容器对象-->
+    <bean class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory1"/>
+        <property name="destination" ref="genHtmlTopic"/>
+        <property name="messageListener" ref="messageListenerGenHtml"/>
+    </bean>
+</beans>

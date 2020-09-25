@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:redis.properties" />
+
+    <!-- 对象池配置 -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${spring.redis.pool.maxTotal}" /> <!-- 控制一个pool可分配多少个jedis实例 -->
+        <property name="maxIdle" value="${spring.redis.pool.maxIdle}" />   <!-- 控制一个pool最多有多少个状态为idle(空闲)的jedis实例 -->
+        <property name="minIdle" value="${spring.redis.pool.minIdle}" />
+        <property name="maxWaitMillis" value="${spring.redis.pool.maxWaitMillis}" />  <!-- 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException -->
+        <!--         <property name="testOnBorrow" value="${redis.pool.testOnBorrow}" /> 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的
+                <property name="testOnReturn" value="${redis.pool.testOnReturn}" />
+                <property name="testWhileIdle" value="${redis.pool.testWhileIdle}" /> -->
+    </bean>
+
+    <!-- 工厂实现 -->
+    <bean id="jedisConnectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          destroy-method="destroy">
+        <property name="hostName" value="${spring.redis.host}" />
+        <property name="port" value="${spring.redis.port}" />
+        <property name="password" value="${spring.redis.password}" />
+        <property name="timeout" value="${spring.redis.timeout}" />
+        <property name="database" value="${spring.redis.database}" />
+        <!-- <property name="usePool" value="${redis.usePool}" /> -->
+        <property name="poolConfig" ref="jedisPoolConfig" />
+    </bean>
+    <!-- 模板类 -->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="connectionFactory" ref="jedisConnectionFactory" />
+    </bean>
+    <!--第三步：
+        上面的步骤是使用redis必须要配置的，
+        而下面这步则是为了使用springsession而配置的-->
+    <!-- 使用spring-session把http session放到redis里 -->
+    <bean id="redisHttpSessionConfiguration"
+          class="org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration">
+        <property name="maxInactiveIntervalInSeconds" value="${session.maxInactiveIntervalInSeconds}" />
+    </bean>
+</beans>

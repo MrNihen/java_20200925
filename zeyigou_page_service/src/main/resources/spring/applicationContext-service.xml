@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:mvc="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--加载属性文件-->
+    <context:property-placeholder location="classpath*:properties/*.properties"/>
+    <!--0.配置freemarker的配置对象-->
+    <bean id="freeMarkerConfigurer" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+        <!--0.1)指定模板默认字符集编码-->
+        <property name="defaultEncoding" value="UTF-8"/>
+        <!--0.2）指定模板文件所在的位置-->
+        <property name="templateLoaderPath" value="/WEB-INF/ftl/"/>
+    </bean>
+
+    <!--1.下面配置dubbo的相关-->
+    <!--1.1)配置应用程序服务名-->
+    <dubbo:application name="zeyigou_page_service"/>
+
+    <!--1.2)配置为当前的服务分配的端口号，默认为20880，每个服务占用一个-->
+    <dubbo:protocol name="dubbo" port="20884"/>
+
+    <!--1.3)配置dubbo的注册中心的地址，其中的端口号代表我们客户端访问注册中心的端口号-->
+    <dubbo:registry address="zookeeper://192.168.25.129:2181"/>
+
+    <!--1.4）配置要扫描的service注解所在包的位置-->
+    <dubbo:annotation package="com.zeyigou.page.service.impl"/>
+</beans>
